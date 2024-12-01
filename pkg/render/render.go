@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/yuhenghenrycai/go_web/pkg/config"
+	"github.com/yuhenghenrycai/go_web/pkg/models"
 )
 
 var app *config.AppConfig
@@ -17,7 +18,12 @@ func NewRender(a *config.AppConfig) {
 	app = a
 }
 
-func RenderTemplate(w http.ResponseWriter, tmpl string) {
+func AddDefaultData(td *models.TemplateData) *models.TemplateData {
+	// will be used to set commonly used data across templates. leave it empty for now
+	return td
+}
+
+func RenderTemplate(w http.ResponseWriter, tmpl string, td *models.TemplateData) {
 	var tc map[string]*template.Template
 	var err error
 	if app.UseCache {
@@ -33,7 +39,9 @@ func RenderTemplate(w http.ResponseWriter, tmpl string) {
 
 	// write to buf first so that we can inspect the bytes sending back to client
 	buf := new(bytes.Buffer)
-	err = t.Execute(buf, nil)
+	td = AddDefaultData(td)
+
+	err = t.Execute(buf, td)
 	if err != nil {
 		log.Fatal(err)
 	}
